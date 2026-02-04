@@ -131,7 +131,6 @@ This creates an autoclicker while the key is held.
 - Keys or mouse could get stuck if the app crashes  
 - No macro recording feature  
 - No script validation in the UI
-- Configs save in current directory
 - Edit icon not rendering correctly
 
 ---
@@ -156,7 +155,6 @@ Expect bugs, rough edges, and frequent changes.
 - Mouse button keybind support  
 - Macro recording  
 - Import/export configs
-- Add saving to %appdata% directory instead of current
 
 ---
 
