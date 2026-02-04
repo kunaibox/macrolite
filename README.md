@@ -132,6 +132,7 @@ This creates an autoclicker while the key is held.
 - No macro recording feature  
 - No script validation in the UI
 - Configs save in current directory
+- Edit icon not rendering correctly
 
 ---
 
