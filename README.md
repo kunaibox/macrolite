@@ -24,7 +24,7 @@ You have **two ways** to use MacroLite:
 
 ---
 
-### 🅰 Path 1 Download Prebuilt Binary
+### 🅰 Path 1 Download Prebuilt Installer
 
 1. Go to the **Releases** section of this repository.
 2. Download the latest **MacroLite executable**.
