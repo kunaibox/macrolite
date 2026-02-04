@@ -130,7 +130,8 @@ This creates an autoclicker while the key is held.
 - No emergency stop key yet  
 - Keys or mouse could get stuck if the app crashes  
 - No macro recording feature  
-- No script validation in the UI  
+- No script validation in the UI
+- Configs save in current directory
 
 ---
 
@@ -153,7 +154,8 @@ Expect bugs, rough edges, and frequent changes.
 - Mouse movement
 - Mouse button keybind support  
 - Macro recording  
-- Import/export configs  
+- Import/export configs
+- Add saving to %appdata% directory instead of current
 
 ---
 
