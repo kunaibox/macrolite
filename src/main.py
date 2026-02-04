@@ -2,8 +2,12 @@ from imgui_bundle import imgui, hello_imgui
 from pynput import keyboard
 import threading, json, os
 from macro import ScriptParser, MacroRuntime
+import os
 
-DATA_FILE = "macros.json"
+APPDATA_DIR = os.path.join(os.getenv("LOCALAPPDATA"), "MacroLite")
+os.makedirs(APPDATA_DIR, exist_ok=True)
+DATA_FILE = os.path.join(APPDATA_DIR, "macros.json")
+
 WINDOW_W = 1200
 WINDOW_H = 650
 
