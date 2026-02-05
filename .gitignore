@@ -1,2 +1,5 @@
 icon.ico
 macroLiteSetup.iss
+MacroLite.ini
+__pycache__/
+dist/
