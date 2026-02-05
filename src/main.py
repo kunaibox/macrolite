@@ -3,16 +3,45 @@ from pynput import keyboard
 import threading, json, os
 from macro import ScriptParser, MacroRuntime
 import os
+import requests
+import webbrowser
 
 APPDATA_DIR = os.path.join(os.getenv("LOCALAPPDATA"), "MacroLite")
 os.makedirs(APPDATA_DIR, exist_ok=True)
 DATA_FILE = os.path.join(APPDATA_DIR, "macros.json")
-version = "1.0.0"
+GITHUB_REPO = "kunaibox/macrolite"  # e.g. kunai/MacroLite
+LATEST_RELEASE_URL = f"https://github.com/{GITHUB_REPO}/releases/latest"
+version = "1.0.1"
+latest_version = None
+show_update_popup = False
+checked_update = False
+update_popup_requested = False
 WINDOW_W = 1200
 WINDOW_H = 650
 
 parser = ScriptParser()
 runtime = MacroRuntime()
+
+#updater
+def check_for_updates():
+    global latest_version, show_update_popup, checked_update, update_popup_requested
+
+    if checked_update:
+        return
+
+    checked_update = True
+    try:
+        r = requests.get(
+            f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest",
+            timeout=5
+        )
+        if r.status_code == 200:
+            latest_version = r.json()["tag_name"].lstrip("v")
+            if latest_version != version:
+                show_update_popup = True
+                update_popup_requested = True
+    except Exception as e:
+        print("Update check failed:", e)
 
 # json
 def load_data():
@@ -94,6 +123,40 @@ threading.Thread(
 # ui
 def gui():
     global selected_macro_index, macro_name, macro_script, keybind, waiting_for_keybind, rename_buffer
+    global show_update_popup, update_popup_requested
+
+    check_for_updates()
+
+    if show_update_popup and update_popup_requested:
+        imgui.open_popup("Update Available")
+        update_popup_requested = False
+
+    if imgui.is_popup_open("Update Available"):
+        if imgui.begin_popup_modal(
+            "Update Available",
+            None,
+            imgui.WindowFlags_.always_auto_resize
+        ):
+            imgui.text("A new version of MacroLite is available.")
+            imgui.spacing()
+            imgui.text(f"Current version: {version}")
+            imgui.text(f"Latest version: {latest_version}")
+
+            imgui.spacing()
+            imgui.separator()
+            imgui.spacing()
+
+            if imgui.button("Update", (140, 40)):
+                webbrowser.open(LATEST_RELEASE_URL)
+                hello_imgui.get_runner_params().app_shall_exit = True
+
+            imgui.same_line()
+
+            if imgui.button("Later", (140, 40)):
+                show_update_popup = False
+                imgui.close_current_popup()
+
+            imgui.end_popup()
 
     imgui.set_next_window_pos((0, 0), imgui.Cond_.always)
     imgui.set_next_window_size((WINDOW_W, WINDOW_H), imgui.Cond_.always)
