@@ -157,6 +157,7 @@ Expect bugs, rough edges, and frequent changes.
 - Mouse button keybind support  
 - Macro recording  
 - Import/export configs
+- Minimize to taskbar
 
 ---
 
