@@ -3,6 +3,8 @@
 MacroLite is a small desktop macro tool with its own scripting language.  
 It’s a passion project and currently in an early development stage.
 
+![Test Image 1](repo/images/macrolite.png)
+
 ---
 
 ## What It Does
