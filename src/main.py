@@ -7,7 +7,7 @@ import os
 APPDATA_DIR = os.path.join(os.getenv("LOCALAPPDATA"), "MacroLite")
 os.makedirs(APPDATA_DIR, exist_ok=True)
 DATA_FILE = os.path.join(APPDATA_DIR, "macros.json")
-
+version = "1.0.0"
 WINDOW_W = 1200
 WINDOW_H = 650
 

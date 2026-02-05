@@ -2,7 +2,7 @@ import time
 import threading
 from pynput.keyboard import Controller as KeyController
 from pynput.mouse import Controller as MouseController, Button
-version = "1.0.0"
+
 
 key_ctrl = KeyController()
 mouse = MouseController()
