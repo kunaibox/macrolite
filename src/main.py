@@ -6,6 +6,9 @@ import os
 import requests
 import webbrowser
 
+
+#finish validation errors
+
 APPDATA_DIR = os.path.join(os.getenv("LOCALAPPDATA"), "MacroLite")
 os.makedirs(APPDATA_DIR, exist_ok=True)
 DATA_FILE = os.path.join(APPDATA_DIR, "macros.json")
@@ -21,7 +24,101 @@ WINDOW_H = 650
 
 parser = ScriptParser()
 runtime = MacroRuntime()
+# validation
+CONDITION_COMMANDS = ["holding", "single", "toggle"]
 
+ACTION_COMMANDS = {
+    "delay": {
+    "args": 1,
+    "types": [int],
+    "validate": lambda a: a[0] >= 0 or "delay must be >= 0"
+    },
+    "keydown": {"args": 1, "types": [str]},
+    "keyup": {"args": 1, "types": [str]},
+    "keytap": {"args": 1, "types": [str]},
+
+    "leftclickdown": {"args": 0, "types": []},
+    "leftclickup": {"args": 0, "types": []},
+    "leftclick": {"args": 0, "types": []},
+
+    "rightclickdown": {"args": 0, "types": []},
+    "rightclickup": {"args": 0, "types": []},
+    "rightclick": {"args": 0, "types": []},
+
+    "middleclickdown": {"args": 0, "types": []},
+    "middleclickup": {"args": 0, "types": []},
+    "middleclick": {"args": 0, "types": []},
+
+    "scrollup": {"args": 0, "types": []},
+    "scrolldown": {"args": 0, "types": []},
+
+    "repeat": {"args": 1, "types": [int]},
+    "repeatend": {"args": 0, "types": []},
+}
+
+class ScriptValidator:
+    def validate(self, script_text):
+        errors = []
+        lines = [l.strip().lower() for l in script_text.splitlines() if l.strip()]
+
+        if not lines:
+            return ["Empty macro script"]
+
+        # validate condition
+        if lines[0] not in CONDITION_COMMANDS:
+            return ["Line 1: First line must be a condition command (holding, single, toggle)"]
+
+        i = 1
+        repeat_stack = []
+
+        while i < len(lines):
+            parts = lines[i].split()
+            cmd = parts[0]
+
+            if cmd not in ACTION_COMMANDS:
+                errors.append(f"Line {i+1}: Unknown command '{cmd}'")
+                break
+
+            spec = ACTION_COMMANDS[cmd]
+
+            if len(parts) - 1 != spec["args"]:
+                errors.append(
+                    f"Line {i+1}: '{cmd}' expects {spec['args']} argument(s)"
+                )
+                break
+            parsed_args = []
+            for arg, expected in zip(parts[1:], spec["types"]):
+                try:
+                    parsed_args.append(expected(arg))
+                except ValueError:
+                    errors.append(
+                        f"Line {i+1}: Invalid argument for '{cmd}'"
+                    )
+                    break
+            else:
+                if "validate" in spec and spec["validate"]:
+                    result = spec["validate"](parsed_args)
+                    if result is not True:
+                        errors.append(f"Line {i+1}: {result}")
+                        break
+
+            if cmd == "repeat":
+                repeat_stack.append(i)
+
+            elif cmd == "repeatend":
+                if not repeat_stack:
+                    errors.append(f"Line {i+1}: repeatend without matching repeat")
+                    break
+                repeat_stack.pop()
+
+            i += 1
+
+        if repeat_stack:
+            errors.append("Missing repeatend")
+
+        return errors
+
+validator = ScriptValidator()
 #updater
 def check_for_updates():
     global latest_version, show_update_popup, checked_update, update_popup_requested
@@ -68,7 +165,7 @@ macro_script = ""
 keybind = "None"
 waiting_for_keybind = False
 rename_buffer = ""
-
+validation_error = ""
 
 # macro
 def load_macro_by_index(index):
@@ -123,7 +220,7 @@ threading.Thread(
 # ui
 def gui():
     global selected_macro_index, macro_name, macro_script, keybind, waiting_for_keybind, rename_buffer
-    global show_update_popup, update_popup_requested
+    global show_update_popup, update_popup_requested, validation_error
 
     check_for_updates()
 
@@ -247,6 +344,11 @@ def gui():
     imgui.begin_child("middle", (520, 0), True)
     imgui.text("Script")
     _, macro_script = imgui.input_text_multiline("##script", macro_script, (500, 420))
+
+    if validation_error:
+        imgui.spacing()
+        imgui.text_colored((1.0, 0.3, 0.3, 1.0), validation_error)
+
     imgui.end_child()
     imgui.same_line()
 
@@ -268,15 +370,27 @@ def gui():
     imgui.spacing()
 
     if imgui.button("Save", (140, 45)) and selected_macro_index != -1:
-        old_name = list(macros_dict.keys())[selected_macro_index]
-        macros_dict[macro_name] = {
-            "enabled": macros_dict[old_name]["enabled"],
-            "script": macro_script,
-            "keybind": keybind
-        }
-        if macro_name != old_name:
-            del macros_dict[old_name]
-        save_data(data)
+        validation_error = ""
+
+        try:
+            parser.parse(macro_script)
+            errors = validator.validate(macro_script)
+
+            if errors:
+                validation_error = errors[0]
+            else:
+                old_name = list(macros_dict.keys())[selected_macro_index]
+                macros_dict[macro_name] = {
+                    "enabled": macros_dict[old_name]["enabled"],
+                    "script": macro_script,
+                    "keybind": keybind
+                }
+                if macro_name != old_name:
+                    del macros_dict[old_name]
+                save_data(data)
+
+        except Exception as e:
+            validation_error = str(e)
 
     imgui.end_child()
     imgui.end()

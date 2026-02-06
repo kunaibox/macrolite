@@ -3,6 +3,7 @@ import threading
 from pynput.keyboard import Controller as KeyController
 from pynput.mouse import Controller as MouseController, Button
 
+#add all special keys to the key controller
 
 key_ctrl = KeyController()
 mouse = MouseController()
