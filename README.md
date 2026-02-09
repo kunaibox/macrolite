@@ -15,7 +15,7 @@ MacroLite lets you:
 - Assign them to keyboard keys  
 - Write scripts using a custom macro language (called **mlite**)
 > [!NOTE]  
-> Plans to remove mlite and have an easier interface that wouldn't require wikimaxing.
+> Plans to remove mlite and have an easier interface that wouldn't require wikimaxing from v1.1.0 onwards.
 - Run macros in **holding**, **single**, or **toggle** modes  
 
 It includes a visual editor!
